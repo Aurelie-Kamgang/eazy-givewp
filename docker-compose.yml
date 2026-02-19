@@ -1,5 +1,3 @@
-version: '3.3'
-
 services:
   db:
     image: mysql:5.7
@@ -26,6 +24,15 @@ services:
       WORDPRESS_DB_HOST: db:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
+    command: >
+      bash -c "
+        docker-entrypoint.sh apache2-foreground &
+        sleep 10 &&
+        IP=$$(curl -s ifconfig.me) &&
+        wp option update siteurl http://$$IP:8004 --allow-root &&
+        wp option update home http://$$IP:8004 --allow-root &&
+        wait
+      "
 
 volumes:
   db_data:
