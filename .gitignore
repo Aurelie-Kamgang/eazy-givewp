@@ -78,3 +78,6 @@ build
 
 # wp-env
 .wp-env.override.json
+
+.env              # contient les mots de passe réels
+*.log
