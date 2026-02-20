@@ -1,4 +1,12 @@
+---
+# ============================================================
+# docker-compose.yml – WordPress dockerisé
+# Les valeurs sensibles sont dans le fichier .env (non commité)
+# Voir .env.example pour la liste des variables requises
+# ============================================================
+
 services:
+
   db:
     image: mysql:5.7
     volumes:
@@ -6,10 +14,10 @@ services:
       - ./sample-data/wordpress.sql:/docker-entrypoint-initdb.d/wordpress.sql
     restart: always
     environment:
-      MYSQL_USER: wordpress
-      MYSQL_ROOT_PASSWORD: wordpress
-      MYSQL_DATABASE: wordpress
-      MYSQL_PASSWORD: wordpress
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
 
   wordpress:
     image: conetix/wordpress-with-wp-cli
@@ -18,19 +26,19 @@ services:
     depends_on:
       - db
     ports:
-      - "8004:80"
+      - "${WORDPRESS_PORT:-8004}:80"
     restart: always
     environment:
       WORDPRESS_DB_HOST: db:3306
-      WORDPRESS_DB_USER: wordpress
-      WORDPRESS_DB_PASSWORD: wordpress
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
     command: >
       bash -c "
         docker-entrypoint.sh apache2-foreground &
         sleep 10 &&
         IP=$$(curl -s ifconfig.me) &&
-        wp option update siteurl http://$$IP:8004 --allow-root &&
-        wp option update home http://$$IP:8004 --allow-root &&
+        wp option update siteurl http://$$IP:${WORDPRESS_PORT:-8004} --allow-root &&
+        wp option update home http://$$IP:${WORDPRESS_PORT:-8004} --allow-root &&
         wait
       "
 
