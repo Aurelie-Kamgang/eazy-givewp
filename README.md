@@ -72,3 +72,71 @@ Note: We use [@wordpress/scripts](https://developer.wordpress.org/block-editor/r
 * Commit the `package.lock` file. Read more about why [here](https://docs.npmjs.com/files/package-lock.json).
 * Your editor should recognize the `.eslintrc` and `.editorconfig` files within the Repo's root directory. Please only submit PRs following those coding style rulesets.
 * Read [CONTRIBUTING.md](https://github.com/impress-org/give/blob/master/CONTRIBUTING.md) - it contains more about contributing to GiveWP.
+
+# wordpress-docker
+
+> WordPress dockerisé – les credentials sont gérés via un fichier `.env` local (non commité).
+
+## Premier lancement
+
+```bash
+# 1. Copier le template
+cp .env.example .env
+
+# 2. Remplir les mots de passe dans .env
+vi .env
+
+# 3. Lancer les containers
+docker compose up -d
+
+# 4. Vérifier
+docker compose ps
+docker compose logs -f
+```
+
+## Gestion des secrets
+
+```
+repo-docker/
+├── docker-compose.yml   ← utilise ${VARIABLE} – commité ✅
+├── .env.example         ← template sans valeurs réelles – commité ✅
+├── .env                 ← valeurs réelles – JAMAIS commité ❌
+└── .gitignore           ← exclut .env
+```
+
+### Règle d'or
+
+| Fichier | Commité ? | Contient |
+|---------|-----------|---------|
+| `docker-compose.yml` | ✅ oui | références `${VAR}` uniquement |
+| `.env.example` | ✅ oui | noms des variables, valeurs vides |
+| `.env` | ❌ **jamais** | les vrais mots de passe |
+
+## Variables disponibles (.env)
+
+| Variable | Description |
+|----------|-------------|
+| `MYSQL_DATABASE` | Nom de la base de données |
+| `MYSQL_USER` | Utilisateur MySQL WordPress |
+| `MYSQL_PASSWORD` | Mot de passe utilisateur MySQL |
+| `MYSQL_ROOT_PASSWORD` | Mot de passe root MySQL |
+| `WORDPRESS_PORT` | Port exposé (défaut : 8004) |
+
+## Commandes utiles
+
+```bash
+# Voir les variables actives chargées depuis .env
+docker compose config
+
+# Arrêter les containers
+docker compose down
+
+# Supprimer aussi les volumes (⚠️ perte de données)
+docker compose down -v
+
+# Accéder au shell MySQL
+docker compose exec db mysql -u root -p${MYSQL_ROOT_PASSWORD} wordpress
+
+# Accéder au shell WordPress (WP-CLI disponible)
+docker compose exec wordpress bash
+```
